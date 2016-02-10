@@ -2,7 +2,7 @@ name:                selenese
 version:             0.1.0.0
 synopsis:            Data structure for Selenium IDE's "Selenese" and a quick TagSoup parser for Selenese HTML files.
 description:         Please see README.md
-homepage:            http://github.com/githubuser/simple#readme
+homepage:            https://github.com/beerendlauwers/haskell-selenese/blob/master/README.md
 license:             BSD3
 license-file:        LICENSE
 author:              Beerend Lauwers
@@ -33,4 +33,4 @@ test-suite simple-test
 
 source-repository head
   type:     git
-  location: https://github.com/githubuser/simple
+  location: https://github.com/beerendlauwers/haskell-selenese
