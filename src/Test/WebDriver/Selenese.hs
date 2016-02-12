@@ -5,8 +5,20 @@ import System.FilePath
 import Data.Char
 import Data.String.Utils (strip)
 
-type Target = String
-type Value = String
+data Value
+ = Placeholder String
+ | Normal String
+ deriving (Show, Eq)
+
+data Target
+ = Identifier String
+ | Id String
+ | Name String
+ | XPath String
+ | Link String
+ | CSS String
+ | DOM String
+ deriving (Show, Eq)
 
 -- TODO: Find out what the formal parameters are here.
 data Selenese 
@@ -34,7 +46,7 @@ data Selenese
  | StoreAttribute Target Value
  | GotoIf Target Value
  | SelectFrame Target
- | Label String
+ | Label Target
  | Pause Target
  | Echo Target
  | SetTimeout Target
@@ -52,8 +64,8 @@ readSingleSelenese :: [Tag String] -> Selenese
 readSingleSelenese tags = toSelenese cmd tgt val
  where split = partitions (~== "<td>") tags
        cmd = getValue $ split
-       tgt = getValue $ (drop 1) split
-       val = getValue $ (drop 2) split
+       tgt = toTarget $ getValue $ (drop 1) split
+       val = toValue $  getValue $ (drop 2) split
        getValue = strip . innerText . head
        
 -- |
@@ -92,11 +104,27 @@ toSelenese cmd tgt val =
   "assertelementpresent" -> AssertElementPresent tgt
   _ -> Unsupported cmd tgt val
   
+toValue :: String -> Value
+toValue s | take 2 s == "${" && (take 1 . reverse) s == "}" = Placeholder ((reverse . drop 1 . reverse . drop 2) s)
+          | otherwise = Normal s
+  
+toTarget :: String -> Target
+toTarget s | take 3 s' == "id=" = Id (drop 3 s')
+           | take 5 s' == "name=" = Name (drop 5 s')
+           | take 6 s' == "xpath=" = XPath (drop 6 s')
+           | take 2 s' == "//" = XPath s' -- "Locators starting with “//” will use the XPath locator strategy."
+           | take 5 s' == "link=" = Link (drop 5 s')
+           | take 4 s' == "dom=" = DOM (drop 4 s')
+           | take 8 s' == "document" = DOM s' -- "Locators starting with “document” will use the DOM locator strategy."
+           | take 4 s' == "css=" = CSS (drop 4 s')
+           | otherwise = Identifier s' -- "Locators without an explicitly defined locator strategy will default to using the identifier locator strategy."
+           
+ where s' = (map toLower . strip) s -- Get rid of whitespace and lowercase everything
 
 readSelenese :: String -> [Selenese]
 readSelenese input = splitSelenese (parseTags input)
 
 -- Debugging stuff
-input = readFile "../files/testCaseTool.html"
+input = readFile "files/testCaseTool.html"
 tags = fmap parseTags input
 parts = fmap (partitions (~== "<tr>")) tags
