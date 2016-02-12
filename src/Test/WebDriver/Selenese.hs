@@ -40,7 +40,7 @@ data Selenese
  | SetTimeout Target
  | Select Target Value
  | AssertElementPresent Target
- | Unsupported Target Value
+ | Unsupported String Target Value
  deriving (Show,Eq)
 
 getSeleniumFile :: FilePath -> IO [Selenese]
@@ -54,12 +54,12 @@ readSingleSelenese tags = toSelenese cmd tgt val
        cmd = getValue $ split
        tgt = getValue $ (drop 1) split
        val = getValue $ (drop 2) split
-       getValue = innerText . head
+       getValue = strip . innerText . head
        
 -- |
 toSelenese :: String -> Target -> Value -> Selenese
 toSelenese cmd tgt val = 
- case (map toLower $ strip cmd) of
+ case (map toLower cmd) of
   "open" -> Open tgt
   "clickandwait" -> ClickAndWait tgt
   "click" -> Click tgt
@@ -90,7 +90,7 @@ toSelenese cmd tgt val =
   "settimeout" -> SetTimeout tgt
   "select" -> Select tgt val
   "assertelementpresent" -> AssertElementPresent tgt
-  _ -> Unsupported tgt val
+  _ -> Unsupported cmd tgt val
   
 
 readSelenese :: String -> [Selenese]
