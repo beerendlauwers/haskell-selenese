@@ -113,13 +113,14 @@ toTarget s | take 3 s' == "id=" = Id (drop 3 s')
            | take 5 s' == "name=" = Name (drop 5 s')
            | take 6 s' == "xpath=" = XPath (drop 6 s')
            | take 2 s' == "//" = XPath s' -- "Locators starting with “//” will use the XPath locator strategy."
-           | take 5 s' == "link=" = Link (drop 5 s')
+           | take 5 s' == "link=" = Link (drop 5 sKeepCase)
            | take 4 s' == "dom=" = DOM (drop 4 s')
            | take 8 s' == "document" = DOM s' -- "Locators starting with “document” will use the DOM locator strategy."
            | take 4 s' == "css=" = CSS (drop 4 s')
            | otherwise = Identifier s' -- "Locators without an explicitly defined locator strategy will default to using the identifier locator strategy."
            
  where s' = (map toLower . strip) s -- Get rid of whitespace and lowercase everything
+       sKeepCase = strip s -- Link is case sensitive.
 
 readSelenese :: String -> [Selenese]
 readSelenese input = splitSelenese (parseTags input)
