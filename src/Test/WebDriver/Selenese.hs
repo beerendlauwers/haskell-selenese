@@ -122,6 +122,19 @@ toTarget s | take 3 s' == "id=" = Id (drop 3 s')
  where s' = (map toLower . strip) s -- Get rid of whitespace and lowercase everything
        sKeepCase = strip s -- Link is case sensitive.
 
+extractTarget :: Target -> String
+extractTarget (Identifier s) = s
+extractTarget (Id s) = s
+extractTarget (Name s) = s
+extractTarget (XPath s) = s
+extractTarget (Link s) = s
+extractTarget (CSS s) = s
+extractTarget (DOM s) = s
+
+extractValue :: Value -> String
+extractValue (Placeholder s) = s
+extractValue (Normal s) = s
+       
 readSelenese :: String -> [Selenese]
 readSelenese input = splitSelenese (parseTags input)
 
